@@ -13,6 +13,7 @@ class CollectionViewController: UIViewController {
   
   init(viewModel: HomeTableViewModel) {
     self.viewModel = viewModel
+    super.init(nibName: nil, bundle: nil)
   }
   
   required init?(coder: NSCoder) {
@@ -30,6 +31,35 @@ class CollectionViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    collectionView.dataSource = self
+    collectionView.delegate = self
+    configureDataSource()
+    setConstraint()
+  }
+  
+  private func setConstraint() {
+    view.addSubview(collectionView)
+    
+    NSLayoutConstraint.activate([
+      collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+      collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+    ])
+  }
+  
+  private func configureDataSource() {
+    viewModel.fetchMealsList { [weak self] result in
+      switch result {
+      case .success(let meal):
+        print("Fetched \(meal)")
+        DispatchQueue.main.async {
+          self?.collectionView.reloadData()
+        }
+      case .failure(let error):
+        print("Failed to fetch \(error)")
+      }
+    }
   }
 }
 
@@ -42,7 +72,15 @@ extension CollectionViewController: UICollectionViewDataSource, UICollectionView
     guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.identifier, for: indexPath) as? CollectionViewCell else {
       return CollectionViewCell()
     }
-//    cell.configureViews(let: viewModel.meals[indexPath.row])
+    cell.configureViews(let: viewModel.meals[indexPath.row])
     return cell
+  }
+}
+
+extension CollectionViewController: UICollectionViewDelegateFlowLayout {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    let width: CGFloat = 100
+    let height: CGFloat = collectionView.bounds.height
+    return CGSize(width: width, height: height)
   }
 }

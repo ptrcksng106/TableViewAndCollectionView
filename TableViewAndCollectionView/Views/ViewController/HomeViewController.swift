@@ -51,7 +51,6 @@ class HomeViewController: UIViewController {
     viewModel.fetchMealsList { [weak self] result in
       switch result {
       case .success(let meal):
-        //        self?.viewModel.meals = meal
         print("Fetched \(meal)")
         DispatchQueue.main.async {
           self?.tblView.reloadData()
